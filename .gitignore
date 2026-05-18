@@ -3,7 +3,5 @@ __pycache__/
 .venv/
 venv/
 .env
-Fake_job_detection.h5
-tokenizer.pkl
 .DS_Store
 *.log
