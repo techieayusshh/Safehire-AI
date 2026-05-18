@@ -65,26 +65,7 @@ fakejob/
 	```
 6. **Open in browser:**
 	[http://127.0.0.1:5000/](http://127.0.0.1:5000/)
-## 📸 Screenshots
-<!-- Add your own screenshots here -->
-<img width="900" alt="SafeHire AI Screenshot" src="https://github.com/user-attachments/assets/d01ec1b8-b91e-447b-8b7f-33d51e06d232" />
-## 🏗️ Deployment (Render)
-1. Push your code to GitHub.
-2. Connect your repo to [Render.com](https://render.com/).
-3. Set build & start commands:
-	- **Build Command:** `pip install -r requirements.txt`
-	- **Start Command:** `gunicorn app:app`
-4. Add a `runtime.txt` with `python-3.11.8` to pin Python version.
-5. Ensure model files (`Fake_job_detection.h5`, `tokenizer.pkl`) are in the repo and under 100MB each.
-6. (Optional) Add a `Procfile` with `web: gunicorn app:app` for explicit Render config.
-7. (Optional) Set environment variables in Render dashboard if your app uses any secrets.
-## 🔮 Future Improvements
-- Chrome Extension for job portals
-- Explainable AI: highlight risky words
-- Real-time scraping of job posts
-- User authentication & dashboard
-- REST API for programmatic access
-- Docker support for easy deployment
+
 ## ⚠️ Disclaimer
 This tool provides predictions based on patterns in training data. Always use your own judgment before applying for jobs or sharing personal information.
 ## 👤 Author
