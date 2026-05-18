@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeHire AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-title">SafeHire <span class="brand-accent">AI</span></div>
+            <div class="brand-sub">EMPOWERING TRUST</div>
+        </div>
+        <div class="topbar-right">
+            <div class="avatar" aria-label="User"></div>
+        </div>
+    </header>
+    <main class="main">
+        <section class="panel panel-left">
+            <div class="panel-header">
+                <span class="icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                </span>
+                JOB POSTING INPUT
+            </div>
+            <form action="/predict" method="post" class="analysis-form" id="analysisForm">
+                <label for="combined_text" class="input-label">Paste a detailed job description here to initiate analysis (e.g., insert sample job text).</label>
+                <textarea name="combined_text" id="combined_text" placeholder="We are seeking a remote data entry specialist. No experience required. Earn $3000/week. Apply now." required></textarea>
+                <button type="submit" class="cta-button">
+                    <span class="icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16.5 16.5l4 4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                    </span>
+                    Analyze Posting
+                </button>
+                <div class="loader" id="loader"></div>
+            </form>
+        </section>
+        <section class="panel panel-right">
+            <div class="panel-header">
+                <span class="icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V8m8 12V4m8 16v-8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                </span>
+                ANALYSIS DASHBOARD
+            </div>
+            <div class="dashboard">
+                <div class="gauge-wrap">
+                    <svg id="riskGauge" width="170" height="170" viewBox="0 0 170 170" aria-hidden="true">
+                        <circle cx="85" cy="85" r="70" stroke="#2b2f38" stroke-width="12" fill="none"/>
+                        <path id="gaugeArc" stroke="#F59E0B" stroke-width="12" fill="none" stroke-linecap="round"/>
+                        <g id="gaugeNeedle">
+                            <rect x="83" y="26" width="4" height="64" rx="2" fill="#F59E0B"/>
+                            <circle cx="85" cy="85" r="6" fill="#F59E0B"/>
+                        </g>
+                    </svg>
+                    <div class="gauge-label"><span id="riskValue">53.4%</span> FRAUD RISK</div>
+                    <div class="badge badge-suspicious">
+                        <span class="icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v5m0 4h.01" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                        </span>
+                        SUSPICIOUS
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                        </span>
+                        KEY RISK INDICATORS
+                    </div>
+                    <ul>
+                        <li>Mismatched Patterns</li>
+                        <li>Insufficient verified data</li>
+                        <li>Offer details concern</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-title">
+                        <span class="icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 016 6c0 2.6-1.3 4.2-3 5.3V18H9v-3.7C7.3 13.2 6 11.6 6 9a6 6 0 016-6z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 21h6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                        </span>
+                        AI INSIGHTS
+                    </div>
+                    <p>
+                        {% if reason is defined %}
+                            {{ reason }}
+                        {% else %}
+                            This posting shows several risk factors, including vague requirements, high pay for little experience, and lack of verifiable company information. Proceed with caution.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="footer refined-footer">
+        <div class="footer-center">SafeHire AI &mdash; Professional Job Post Screening</div>
+    </footer>
+    <script>
+        const analysisForm = document.getElementById('analysisForm');
+        const loader = document.getElementById('loader');
+        analysisForm.addEventListener('submit', () => {
+            loader.style.display = 'block';
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, 3000);
+        });
+
+        function polarToCartesian(cx, cy, r, angle) {
+            let a = (angle - 90) * Math.PI / 180.0;
+            return {
+                x: cx + (r * Math.cos(a)),
+                y: cy + (r * Math.sin(a))
+            };
+        }
+        function describeArc(cx, cy, r, startAngle, endAngle) {
+            let start = polarToCartesian(cx, cy, r, endAngle);
+            let end = polarToCartesian(cx, cy, r, startAngle);
+            let arcSweep = endAngle - startAngle <= 180 ? "0" : "1";
+            return [
+                "M", start.x, start.y,
+                "A", r, r, 0, arcSweep, 0, end.x, end.y
+            ].join(" ");
+        }
+
+        const probability = {{ probability|default(53.4) }};
+        const percent = Math.max(0, Math.min(100, probability));
+        const angle = 270 * (percent / 100);
+        const arc = describeArc(85, 85, 70, 135, 135 + angle);
+        const gaugeArc = document.getElementById('gaugeArc');
+        const gaugeNeedle = document.getElementById('gaugeNeedle');
+        const riskValue = document.getElementById('riskValue');
+
+        gaugeArc.setAttribute('d', arc);
+        gaugeArc.setAttribute('stroke', percent >= 80 ? '#EF4444' : (percent >= 50 ? '#F59E0B' : '#22C55E'));
+        gaugeNeedle.setAttribute('transform', `rotate(${(percent * 2.7) - 135} 85 85)`);
+        riskValue.textContent = percent.toFixed(1) + '%';
+    </script>
+</body>
+</html>
