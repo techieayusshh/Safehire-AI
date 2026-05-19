@@ -75,5 +75,4 @@ Role: AI & Data Science Enthusiast
 
 Focus: Machine Learning, Data Science, and AI Projects
 
-Connect: [LinkedIn](https://www.linkedin.com/) <!-- Add your LinkedIn or contact info if desired -->
 
