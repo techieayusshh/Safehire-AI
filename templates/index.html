@@ -48,7 +48,7 @@
                 ANALYSIS DASHBOARD
             </div>
             <div class="dashboard">
-                <div class="gauge-wrap" data-probability="{{ probability|default(53.4, true) }}" data-result="{{ result|default('Suspicious', true) }}">
+                <div class="gauge-wrap" data-probability="{{ probability|default(0) }}" data-result="{{ result|default('Suspicious') }}">
                     <svg id="riskGauge" width="170" height="170" viewBox="0 0 170 170" aria-hidden="true">
                         <circle cx="85" cy="85" r="70" stroke="#2b2f38" stroke-width="12" fill="none"/>
                         <path id="gaugeArc" stroke="#F59E0B" stroke-width="12" fill="none" stroke-linecap="round"/>
@@ -134,8 +134,9 @@
         }
 
         const gaugeWrap = document.querySelector('.gauge-wrap');
-        const probabilityValue = parseFloat(gaugeWrap.dataset.probability || '53.4');
-        const percent = Math.max(0, Math.min(100, probabilityValue));
+        const probabilityValue = Number(gaugeWrap.dataset.probability);
+        const safeValue = Number.isFinite(probabilityValue) ? probabilityValue : 0;
+        const percent = Math.max(0, Math.min(100, safeValue));
         const angle = 270 * (percent / 100);
         const arc = describeArc(85, 85, 70, 135, 135 + angle);
         const gaugeArc = document.getElementById('gaugeArc');
