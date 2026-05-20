@@ -48,7 +48,7 @@
                 ANALYSIS DASHBOARD
             </div>
             <div class="dashboard">
-                <div class="gauge-wrap">
+                <div class="gauge-wrap" data-probability="{{ probability|default(53.4, true) }}" data-result="{{ result|default('Suspicious', true) }}">
                     <svg id="riskGauge" width="170" height="170" viewBox="0 0 170 170" aria-hidden="true">
                         <circle cx="85" cy="85" r="70" stroke="#2b2f38" stroke-width="12" fill="none"/>
                         <path id="gaugeArc" stroke="#F59E0B" stroke-width="12" fill="none" stroke-linecap="round"/>
@@ -58,11 +58,18 @@
                         </g>
                     </svg>
                     <div class="gauge-label"><span id="riskValue">53.4%</span> FRAUD RISK</div>
-                    <div class="badge badge-suspicious">
+                    <div class="badge badge-suspicious" id="riskBadge">
                         <span class="icon">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v5m0 4h.01" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
                         </span>
-                        SUSPICIOUS
+                        <span id="riskLabel">SUSPICIOUS</span>
+                    </div>
+                    <div class="result-text" id="resultText">
+                        {% if prediction is defined %}
+                            {{ prediction }}
+                        {% else %}
+                            Submit a job description to generate a risk score.
+                        {% endif %}
                     </div>
                 </div>
                 <div class="card">
@@ -126,18 +133,32 @@
             ].join(" ");
         }
 
-        const probability = {{ probability|default(53.4) }};
-        const percent = Math.max(0, Math.min(100, probability));
+        const gaugeWrap = document.querySelector('.gauge-wrap');
+        const probabilityValue = parseFloat(gaugeWrap.dataset.probability || '53.4');
+        const percent = Math.max(0, Math.min(100, probabilityValue));
         const angle = 270 * (percent / 100);
         const arc = describeArc(85, 85, 70, 135, 135 + angle);
         const gaugeArc = document.getElementById('gaugeArc');
         const gaugeNeedle = document.getElementById('gaugeNeedle');
         const riskValue = document.getElementById('riskValue');
+        const riskBadge = document.getElementById('riskBadge');
+        const riskLabel = document.getElementById('riskLabel');
 
         gaugeArc.setAttribute('d', arc);
         gaugeArc.setAttribute('stroke', percent >= 80 ? '#EF4444' : (percent >= 50 ? '#F59E0B' : '#22C55E'));
         gaugeNeedle.setAttribute('transform', `rotate(${(percent * 2.7) - 135} 85 85)`);
         riskValue.textContent = percent.toFixed(1) + '%';
+
+        if (percent >= 80) {
+            riskBadge.className = 'badge badge-critical';
+            riskLabel.textContent = 'HIGH RISK';
+        } else if (percent >= 50) {
+            riskBadge.className = 'badge badge-suspicious';
+            riskLabel.textContent = 'SUSPICIOUS';
+        } else {
+            riskBadge.className = 'badge badge-safe';
+            riskLabel.textContent = 'LOW RISK';
+        }
     </script>
 </body>
 </html>

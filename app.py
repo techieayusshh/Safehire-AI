@@ -94,12 +94,23 @@ def predict():
         return render_template(
             "index.html",
             prediction="Model files are missing. Ensure tokenizer.pkl and Fake_job_detection.h5 are present.",
+            probability=0,
+            fraud_chance=0,
+            reason="Model assets are unavailable, so risk scoring cannot run.",
+            result="Unavailable",
         )
 
     combined_text = request.form.get("combined_text")
 
     if not combined_text:
-        return render_template("index.html", prediction="Please enter the job description.")
+        return render_template(
+            "index.html",
+            prediction="Please enter the job description.",
+            probability=0,
+            fraud_chance=0,
+            reason="No job description provided. Submit text to generate a risk score.",
+            result="Unavailable",
+        )
 
     input_data = preprocess_text(combined_text)
 
