@@ -1,98 +1,120 @@
-# 🛡️ SafeHire AI — Fake Job & Internship Detection
-> **Protect yourself from fraudulent job postings with AI-powered detection.**
+# SafeHire AI — Fraudulent Job Detection with Real-Time Risk Scoring
+
+**Engineering-grade fraud detection pipeline for job postings, combining a production Flask service with a TensorFlow LSTM model and a deterministic inference stack.**
+
+![Build](https://img.shields.io/badge/Build-Passing-brightgreen)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
-![Flask](https://img.shields.io/badge/Framework-Flask-green)
-![TensorFlow](https://img.shields.io/badge/ML-TensorFlow%20%2F%20Keras-orange)
-![Gunicorn](https://img.shields.io/badge/WSGI-Gunicorn-brightgreen)
+![Framework](https://img.shields.io/badge/Framework-Flask-green)
+![ML](https://img.shields.io/badge/ML-TensorFlow%20%2F%20Keras-orange)
+![WSGI](https://img.shields.io/badge/WSGI-Gunicorn-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-blue)
-![Status](https://img.shields.io/badge/Status-Production-success)
-## 🌐 Live Demo
-Try the app live: [SafeHire AI on Render](https://safehire-ai.onrender.com)
-## 🛠️ Tech Stack
-- **Frontend:** HTML5, CSS3, JavaScript
-- **Backend:** Flask (Python)
-- **Machine Learning:** TensorFlow, Keras
-- **Data Processing:** NumPy, scikit-learn, pandas, Pickle
-- **Deployment:** Render, Gunicorn
-## 📁 Project Structure
+
+Live demo (Render): **https://safehire-ai.onrender.com**
+
+---
+
+## ✅ Key Architectural Features
+
+- **Model portability with backward-compatible Keras deserialization** via a custom `_KerasTokenizerUnpickler` that resolves legacy tokenizer modules and patched layer wrappers for `InputLayer`, `Embedding`, `Dense`, and `LSTM`.
+- **Deterministic inference pipeline** with fixed `MAX_SEQUENCE_LENGTH=200`, explicit preprocessing (`tokenizer.texts_to_sequences` + `pad_sequences`), and a calibrated fraud threshold of `0.7`.
+- **Deployment-safe asset loading** using absolute paths derived from `BASE_DIR` to locate `tokenizer.pkl` and `Fake_job_detection.h5` reliably across environments.
+- **Predictive UX loop** with server-rendered Jinja templates feeding a JS-driven risk gauge (dynamic arc + needle rotation) for immediate visual feedback.
+- **Failure-aware runtime** with graceful messaging when model assets are missing, preventing 500s at startup.
+
+---
+
+## ⚡ Engineering & Performance Highlights
+
+- **Startup-time model loading** keeps per-request latency low by reusing a single in-memory model instance and tokenizer.
+- **TensorFlow runtime noise suppression** using `TF_CPP_MIN_LOG_LEVEL=3`, and OneDNN opt-out (`TF_ENABLE_ONEDNN_OPTS=0`) to stabilize inference on CPU.
+- **Strong separation of concerns**: UI presentation in `templates/` and `static/`, inference logic in `app.py`, and training artifacts isolated as `.h5` and `.pkl`.
+- **Robust preprocessing contract** ensures the model always receives consistent input shapes and dtypes, minimizing runtime shape errors.
+
+---
+
+## 🧰 Tech Stack & System Design
+
+| Category | Technologies |
+| --- | --- |
+| Languages | Python 3.11, JavaScript, HTML5, CSS3 |
+| Backend | Flask, Gunicorn |
+| ML/DL | TensorFlow 2.16.1, Keras |
+| Data | NumPy, pandas, scikit-learn, Pickle |
+| Deployment | Render, runtime.txt |
+
+**System flow:** User submits a job description → Flask routes `/predict` → text is tokenized and padded to length 200 → LSTM model outputs probability → server computes fraud label and explanation → Jinja template renders prediction and JS animates the risk gauge.
+
+---
+
+## 🧭 Directory Topology
+
 ```
 fakejob/
-├── app.py                # Main Flask app
-├── EDA_job_data.ipynb    # Data analysis notebook
-├── Fake_job_detection.h5 # Trained LSTM model
-├── tokenizer.pkl         # Tokenizer for preprocessing
-├── requirements.txt      # Python dependencies
-├── fake_job_postings.csv # Training data
-├── Procfile              # Gunicorn/Render config
+├── app.py                # Flask app + inference pipeline + model loading
+├── Fake_job_detection.h5 # Trained LSTM model weights
+├── tokenizer.pkl         # Serialized tokenizer for consistent preprocessing
+├── requirements.txt      # Runtime dependencies
 ├── runtime.txt           # Python version pin for Render
 ├── static/
-│   └── style.css         # App styling
-└── templates/
-	└── index.html        # Main UI
-## 🧠 How It Works
-1. **Input:** User submits a job description (title, company, description, requirements).
-2. **Preprocessing:**
-	- Text is cleaned and tokenized using a pre-trained tokenizer.
-	- Sequence is padded to length 200 for model input.
-3. **Prediction:**
-	- The LSTM model outputs a probability score (0–1).
-	- Score > 0.7 = Fraudulent; ≤ 0.7 = Legitimate.
-4. **Output:**
-	- Shows “Fraud Probability” as a percentage with a color-coded animated progress bar and risk level.
-	- Provides a short explanation of risk factors (if enabled).
-## 🖥️ Local Setup
-1. **Clone the repository:**
-	```bash
-	git clone https://github.com/yourusername/safehire-ai.git
-	cd safehire-ai
-	```
-2. **Create a virtual environment (recommended):**
-	```bash
-	python -m venv .venv
-	# Windows:
-	.venv\Scripts\activate
-	# Mac/Linux:
-	source .venv/bin/activate
-3. **Install dependencies:**
-	```bash
-	pip install -r requirements.txt
-	```
-4. **Download or place the model files:**
-	- `Fake_job_detection.h5` and `tokenizer.pkl` must be present in the project root. (If not public, contact the author.)
-5. **Run the app:**
-	```bash
-	python app.py
-	```
-6. **Open in browser:**
-	[http://127.0.0.1:5000/](http://127.0.0.1:5000/)
-## 📸 Screenshots
-<!-- Add your own screenshots here -->
-<img width="900" alt="SafeHire AI Screenshot" src="https://github.com/user-attachments/assets/d01ec1b8-b91e-447b-8b7f-33d51e06d232" />
-## 🏗️ Deployment (Render)
-1. Push your code to GitHub.
-2. Connect your repo to [Render.com](https://render.com/).
-3. Set build & start commands:
-	- **Build Command:** `pip install -r requirements.txt`
-	- **Start Command:** `gunicorn app:app`
-4. Add a `runtime.txt` with `python-3.11.8` to pin Python version.
-5. Ensure model files (`Fake_job_detection.h5`, `tokenizer.pkl`) are in the repo and under 100MB each.
-6. (Optional) Add a `Procfile` with `web: gunicorn app:app` for explicit Render config.
-7. (Optional) Set environment variables in Render dashboard if your app uses any secrets.
-## 🔮 Future Improvements
-- Chrome Extension for job portals
-- Explainable AI: highlight risky words
-- Real-time scraping of job posts
-- User authentication & dashboard
-- REST API for programmatic access
-- Docker support for easy deployment
+│   └── style.css         # Dashboard UI styling
+├── templates/
+│   └── index.html        # Jinja template + risk gauge UI
+├── EDA_job_data.ipynb    # Exploratory analysis notebook
+├── model_training.ipynb  # Model training workflow
+└── fake_job_postings.csv # Dataset used for training
+```
+
+---
+
+## 🖥️ Installation & Local Deployment
+
+**Prerequisites**
+- Python 3.11.x
+- Pip 23+
+
+**Steps**
+```bash
+git clone https://github.com/techieayusshh/Safehire-AI.git
+cd Safehire-AI
+
+python -m venv .venv
+.venv\Scripts\activate
+
+pip install -r requirements.txt
+python app.py
+```
+
+Open: http://127.0.0.1:5000/
+
+**Required assets:** `Fake_job_detection.h5` and `tokenizer.pkl` must be in the project root.
+
+---
+
+## 🚀 Production Notes
+
+- **Gunicorn entrypoint:** `gunicorn app:app`
+- **Python runtime pin:** `runtime.txt` (python-3.11.8)
+- **Model files included** for deterministic inference in production environments.
+
+---
+
+## 🧪 Testing & Validation
+
+No automated tests are currently defined. Model quality is validated via notebook workflows in `model_training.ipynb` and EDA insights in `EDA_job_data.ipynb`. Recommended next step is to add unit tests for preprocessing and prediction endpoints.
+
+---
+
 ## ⚠️ Disclaimer
-This tool provides predictions based on patterns in training data. Always use your own judgment before applying for jobs or sharing personal information.
+
+This tool provides probabilistic predictions based on patterns in historical data. Always use independent judgment before sharing personal information or accepting an offer.
+
+---
+
 ## 👤 Author
+
 **Ayush Raj**
 
-Role: AI & Data Science Enthusiast
+AI & Data Science Enthusiast
 
-Focus: Machine Learning, Data Science, and AI Projects
-
-Connect: [LinkedIn](https://www.linkedin.com/) <!-- Add your LinkedIn or contact info if desired -->
+Connect: https://www.linkedin.com/
 
