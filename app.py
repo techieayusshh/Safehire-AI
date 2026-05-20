@@ -101,6 +101,7 @@ def predict():
         )
 
     combined_text = request.form.get("combined_text")
+    print("[predict] Received input length:", len(combined_text) if combined_text else 0)
 
     if not combined_text:
         return render_template(
@@ -116,6 +117,7 @@ def predict():
 
     prediction = model.predict(input_data)[0][0]
     probability = float(prediction)
+    print("[predict] model prediction:", probability)
     threshold = 0.7
 
     # Detailed insights based on EDA and model training
