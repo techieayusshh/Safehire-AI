@@ -3,7 +3,7 @@ os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import pickle
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import Dense as TfDense
@@ -88,8 +88,10 @@ def preprocess_text(text):
 def home():
     return render_template("index.html")
 
-@app.route("/predict", methods=["POST"])
+@app.route("/predict", methods=["GET", "POST"])
 def predict():
+    if request.method == "GET":
+        return redirect(url_for("home"))
     if tokenizer is None or model is None:
         return render_template(
             "index.html",
@@ -115,9 +117,20 @@ def predict():
 
     input_data = preprocess_text(combined_text)
 
-    prediction = model.predict(input_data)[0][0]
-    probability = float(prediction)
-    print("[predict] model prediction:", probability)
+    try:
+        prediction = model.predict(input_data)[0][0]
+        probability = float(prediction)
+        print("[predict] model prediction:", probability)
+    except Exception as exc:
+        print("[predict] prediction error:", exc)
+        return render_template(
+            "index.html",
+            prediction="Prediction failed due to a server error.",
+            probability=0,
+            fraud_chance=0,
+            reason="The server failed to score this input. Please try again shortly.",
+            result="Unavailable",
+        )
     threshold = 0.7
 
     # Detailed insights based on EDA and model training

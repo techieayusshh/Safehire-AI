@@ -28,7 +28,7 @@
                 </span>
                 JOB POSTING INPUT
             </div>
-            <form action="/predict" method="post" class="analysis-form" id="analysisForm">
+            <form action="{{ url_for('predict') }}" method="post" class="analysis-form" id="analysisForm">
                 <label for="combined_text" class="input-label">Paste a detailed job description here to initiate analysis (e.g., insert sample job text).</label>
                 <textarea name="combined_text" id="combined_text" placeholder="We are seeking a remote data entry specialist. No experience required. Earn $3000/week. Apply now." required></textarea>
                 <button type="submit" class="cta-button">
