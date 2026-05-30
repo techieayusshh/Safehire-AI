@@ -3,6 +3,7 @@ os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import pickle
+import threading
 from flask import Flask, request, render_template, redirect, url_for
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import load_model
@@ -19,6 +20,7 @@ MODEL_PATH = os.path.join(BASE_DIR, "Fake_job_detection.h5")
 
 tokenizer = None
 model = None
+_load_lock = threading.Lock()
 
 class _KerasTokenizerUnpickler(pickle.Unpickler):
     def find_class(self, module, name):
@@ -55,30 +57,42 @@ class _PatchedLSTM(TfLSTM):
         kwargs.pop("quantization_config", None)
         super().__init__(*args, **kwargs)
 
-print("Loading tokenizer...")
-try:
-    with open(TOKENIZER_PATH, "rb") as f:
-        tokenizer = _KerasTokenizerUnpickler(f).load()
-    print("Tokenizer loaded!")
-except FileNotFoundError:
-    print("ERROR: tokenizer.pkl not found. Please make sure it is in the same folder.")
-
-print("Loading Keras model...")
-try:
-    model = load_model(
-        MODEL_PATH,
-        custom_objects={
-            "InputLayer": _PatchedInputLayer,
-            "Embedding": _PatchedEmbedding,
-            "Dense": _PatchedDense,
-            "LSTM": _PatchedLSTM,
-        },
-    )
-    print("Keras model loaded!")
-except OSError:
-    print("ERROR: 'Fake_job_detection.h5' not found. Check the filename.")
-
 MAX_SEQUENCE_LENGTH = 200
+
+def load_assets():
+    global tokenizer, model
+    if tokenizer is not None and model is not None:
+        return True
+
+    with _load_lock:
+        if tokenizer is not None and model is not None:
+            return True
+        print("Loading tokenizer...")
+        try:
+            with open(TOKENIZER_PATH, "rb") as f:
+                tokenizer = _KerasTokenizerUnpickler(f).load()
+            print("Tokenizer loaded!")
+        except FileNotFoundError:
+            print("ERROR: tokenizer.pkl not found. Please make sure it is in the same folder.")
+            return False
+
+        print("Loading Keras model...")
+        try:
+            model = load_model(
+                MODEL_PATH,
+                custom_objects={
+                    "InputLayer": _PatchedInputLayer,
+                    "Embedding": _PatchedEmbedding,
+                    "Dense": _PatchedDense,
+                    "LSTM": _PatchedLSTM,
+                },
+            )
+            print("Keras model loaded!")
+        except OSError:
+            print("ERROR: 'Fake_job_detection.h5' not found. Check the filename.")
+            return False
+
+    return True
 
 def preprocess_text(text):
     sequence = tokenizer.texts_to_sequences([text])
@@ -92,7 +106,8 @@ def home():
 def predict():
     if request.method == "GET":
         return redirect(url_for("home"))
-    if tokenizer is None or model is None:
+
+    if not load_assets():
         return render_template(
             "index.html",
             prediction="Model files are missing. Ensure tokenizer.pkl and Fake_job_detection.h5 are present.",
