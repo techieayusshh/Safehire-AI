@@ -23,10 +23,6 @@ Live demo (Render): **https://safehire-ai.onrender.com**
 	<figcaption>Prediction result with fraud risk score.</figcaption>
 </figure>
 
-<figure>
-	<img src="assets/Screenshot%202026-06-01%20003118.png" width="900" alt="Risk gauge" />
-	<figcaption>Risk gauge visualization for quick signal.</figcaption>
-</figure>
 
 ---
 
