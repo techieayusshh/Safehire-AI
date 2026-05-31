@@ -11,6 +11,23 @@
 
 Live demo (Render): **https://safehire-ai.onrender.com**
 
+## Screenshots
+
+<figure>
+	<img src="assets/Screenshot%202026-06-01%20002538.png" width="900" alt="Dashboard view" />
+	<figcaption>Dashboard view with live demo layout.</figcaption>
+</figure>
+
+<figure>
+	<img src="assets/Screenshot%202026-06-01%20002554.png" width="900" alt="Prediction result" />
+	<figcaption>Prediction result with fraud risk score.</figcaption>
+</figure>
+
+<figure>
+	<img src="assets/Screenshot%202026-06-01%20003118.png" width="900" alt="Risk gauge" />
+	<figcaption>Risk gauge visualization for quick signal.</figcaption>
+</figure>
+
 ---
 
 ## ✅ Key Architectural Features
